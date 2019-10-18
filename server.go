@@ -99,7 +99,7 @@ func (s *server) handlePosition(m message, remote *net.UDPAddr) {
 	for k, v := range s.state.positions {
 		if k != playerId {
 			positionsData = append(positionsData, k, v.x, v.y)
-			s.log.V(10).Info("position data", "player", k, "x", x, "y", y)
+			s.log.V(10).Info("position data", "player", k, "x", v.x, "y", v.y)
 		}
 	}
 	response := message{handshakeResponse, positionsData}
