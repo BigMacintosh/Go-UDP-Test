@@ -67,10 +67,21 @@ func decode(payload []byte) (message, error) {
 	}, nil
 }
 
+//func (s *server) notifyPeriodically(remote *net.UDPAddr) {
+//	response := message{}
+//	_, err := s.conn.WriteToUDP(response.encode(), remote)
+//	if err != nil {
+//		s.log.Error(err, "periodic notification failed", "remote", remote)
+//		return
+//	}
+//}
+
 func (s *server) handleHandshake(m message, remote *net.UDPAddr) {
 	s.log.V(5).Info("opcode = handshake", "data", fmt.Sprintf("%x", m.data))
 	playerId := m.data[0]
+	s.state.Lock()
 	_, present := s.state.positions[playerId]
+	s.state.Unlock()
 	if present {
 		s.log.Error(nil, "player is already present", "player ID", playerId)
 		return
@@ -82,6 +93,7 @@ func (s *server) handleHandshake(m message, remote *net.UDPAddr) {
 		s.log.Error(err, "response failed")
 		return
 	}
+
 	s.log.V(5).Info("handshake response sent", "data", fmt.Sprintf("%x", response.data), "to", remote)
 }
 
@@ -95,6 +107,7 @@ func (s *server) handlePosition(m message, remote *net.UDPAddr) {
 	x := m.data[1]
 	y := m.data[2]
 	s.state.setPosition(playerId, x, y)
+	s.state.Lock()
 	positionsData := make([]byte, 0, len(s.state.positions))
 	positionsData = append(positionsData, byte(len(s.state.positions)-1))
 	for k, v := range s.state.positions {
@@ -103,6 +116,7 @@ func (s *server) handlePosition(m message, remote *net.UDPAddr) {
 			s.log.V(10).Info("position data", "player", k, "x", v.x, "y", v.y)
 		}
 	}
+	s.state.Unlock()
 	response := message{positionResponse, positionsData}
 	_, err := s.conn.WriteToUDP(response.encode(), remote)
 	if err != nil {
