@@ -96,6 +96,7 @@ func (s *server) handlePosition(m message, remote *net.UDPAddr) {
 	y := m.data[2]
 	s.state.setPosition(playerId, x, y)
 	positionsData := make([]byte, 0, len(s.state.positions))
+	positionsData = append(positionsData, byte(len(s.state.positions)-1))
 	for k, v := range s.state.positions {
 		if k != playerId {
 			positionsData = append(positionsData, k, v.x, v.y)
