@@ -102,7 +102,7 @@ func (s *server) handlePosition(m message, remote *net.UDPAddr) {
 			s.log.V(10).Info("position data", "player", k, "x", v.x, "y", v.y)
 		}
 	}
-	response := message{handshakeResponse, positionsData}
+	response := message{positionResponse, positionsData}
 	_, err := s.conn.WriteToUDP(response.encode(), remote)
 	if err != nil {
 		s.log.Error(err, "response failed")
@@ -124,7 +124,7 @@ func (s *server) handle(m message, remote *net.UDPAddr) {
 }
 
 func main() {
-	stdr.SetVerbosity(0)
+	stdr.SetVerbosity(10)
 	conn, err := net.ListenUDP("udp", &net.UDPAddr{
 		IP:   net.ParseIP("0.0.0.0"),
 		Port: 25565,
